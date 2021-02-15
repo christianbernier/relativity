@@ -9,12 +9,14 @@ Konva.pixelRatio = 1;
 let stageWidth = 600,
   stageHeight = 600;
 
-if (window.innerWidth < 500) {
-  stageWidth = window.innerWidth * 0.9;
-  stageHeight = window.innerWidth * 0.9;
-} else {
-  stageWidth = window.innerHeight * 0.8;
-  stageHeight = window.innerHeight * 0.8;
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+  if (window.innerWidth < 500) {
+    stageWidth = window.innerWidth * 0.9;
+    stageHeight = window.innerWidth * 0.9;
+  } else {
+    stageWidth = window.innerHeight * 0.8;
+    stageHeight = window.innerHeight * 0.8;
+  }
 }
 
 const colorReference = [
