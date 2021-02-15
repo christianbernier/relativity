@@ -177,7 +177,7 @@ export default () => {
           grid-template-areas:
             "title stage"
             "infoLeft stage";
-          grid-template-rows: auto auto;
+          grid-template-rows: 100px auto;
           grid-template-columns: 30vw 70vw;
 
           @media only screen and (max-width: 500px) {
