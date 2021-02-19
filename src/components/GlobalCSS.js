@@ -43,10 +43,26 @@ export default () => {
 
           p {
             color: var(--font-white);
+            line-height: 140%;
           }
 
           a {
             color: var(--font-white);
+          }
+
+          input {
+            border: none;
+            padding: 5px;
+            font-size: 1.1rem;
+            margin-top: 3px;
+            border-radius: 5px;
+            background-color: rgb(60, 60, 60);
+            color: var(--font-white);
+            width: 25%;
+          }
+
+          input:focus{
+            outline-width: 0;
           }
         `}
       />
