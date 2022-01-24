@@ -9,20 +9,20 @@ export default () => {
   return (
     <>
       <Helmet>
-        <title>Lissajous Curves</title>
+        <title>Special Relativity</title>
         <link rel="shortcut icon" href={Favicon} />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Lissajous Curves" />
-        <meta property="og:title" content="Lissajous Curves" />
+        <meta property="og:site_name" content="Special Relativity" />
+        <meta property="og:title" content="Special Relativity" />
         <meta
           property="og:description"
-          content="See a visualization of how Lissajous curves are formed!"
+          content="Learn all about special relativity with an interactive spacetime diagram!"
         />
         <meta property="twitter:card" content="summary_large_image" />
-        <meta property="og:image" content={ShareImage}/>
+        <meta property="og:image" content={ShareImage} />
         <meta
           property="description"
-          content="See a visualization of how Lissajous curves are formed!"
+          content="Learn all about special relativity with an interactive spacetime diagram!"
         />
       </Helmet>
       <Global
@@ -30,39 +30,54 @@ export default () => {
           @import url("https://rsms.me/inter/inter.css");
 
           :root {
-            --dark-background: #2d3748;
-            --font-white: #f7fafc;
+            --font: #222;
             font-family: "Inter", Arial, Helvetica, sans-serif;
           }
 
           body {
             padding: 0;
             margin: 0;
-            background-color: rgb(43, 43, 43);
+            background-color: #e2e1e0;
           }
 
-          p {
-            color: var(--font-white);
+          p, li, ol {
+            color: var(--font);
             line-height: 140%;
           }
 
+          .header {
+            font-weight: 700;
+            font-size: 1.6rem;
+          }
+
+          .subheader {
+            font-weight: 600;
+            font-size: 1.3rem;
+          }
+
           a {
-            color: var(--font-white);
+            color: var(--font);
           }
 
-          input {
-            border: none;
-            padding: 5px;
-            font-size: 1.1rem;
-            margin-top: 3px;
-            border-radius: 5px;
-            background-color: rgb(60, 60, 60);
-            color: var(--font-white);
-            width: 25%;
+          button {
+            padding: 0.75rem 1rem;
+            margin: 5px;
+
+            border-width: 0;
+            outline: none;
+            border-radius: 3px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.19), 0 4px 4px rgba(0,0,0,0.23);
+            
+            cursor: pointer;
+            background-color: #007bff;
+            color: #fff;
+            
+            transition: all 0.15s cubic-bezier(0.53, 0.01, 0.46, 1);
           }
 
-          input:focus{
-            outline-width: 0;
+          button:hover {
+            background-color: #0b6cd4;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.19), 0 3px 3px rgba(0,0,0,0.23);
           }
         `}
       />

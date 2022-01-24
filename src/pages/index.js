@@ -1,548 +1,233 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"
 import { css } from "@emotion/core";
+
 import GlobalCSS from "../components/GlobalCSS";
-import Gap from "../components/Gap.js";
-import Konva from "react-konva";
+import SpacetimeDiagram from "../components/SpacetimeDiagram";
+import InfoBox from "../components/InfoBox";
 
-Konva.pixelRatio = 1;
+import TwinParadox from "../../examples/twin-paradox.json";
+import Motorcycle from "../../examples/motorcycle.json";
+import Simultaneity from "../../examples/simultaneity.json";
+import DefaultExample from "../../examples/default.json";
 
-//Default values
-let stageSize = 600;
-let numCircles = 6;
-let maxFramesBetweenCalculations = 300;
-let sizeMultiplier = 1.2;
-let startingPositionX = 0;
-let startingPositionY = 0;
-let framesBetweenCircleRenders = 20;
+let WIDTH = 800;
+let HEIGHT = 500;
 
-//Parameters
-const paramNames = [
-  "Number of circles",
-  "Top circles' starting position (in multiples of pi)",
-  "Left circles' starting position (in multiples of pi)",
-  "Max. frames between calculations",
-  "Frames between calculations size multiplier",
-  "Frames between circle rerenders",
-];
-
-const paramIDs = [
-  "param-num-circles",
-  "param-x-start",
-  "param-y-start",
-  "param-max-frames",
-  "param-size-mult",
-  "param-circle-frames",
-];
-
-const paramDefaults = ["6", "0", "0", "300", "1.2", "20"];
-
-const setParameters = () => {
-  const valuesForParams = [];
-  for (const id of paramIDs) {
-    valuesForParams.push(document.getElementById(id).value);
-  }
-
-  if (typeof window !== "undefined" && typeof document !== "undefined") {
-    if (valuesForParams[0] < 1) {
-      window.alert(
-        "Invalid parameter: Number of circles. The minimum value is 1."
-      );
-      return;
-    }
-
-    if (valuesForParams[3] < 0) {
-      window.alert(
-        "Invalid parameter: Max. frames between calculations. The minimum value is 0."
-      );
-      return;
-    }
-
-    window.location = `?circles=${valuesForParams[0]}&x=${valuesForParams[1]}&y=${valuesForParams[2]}&maxFrames=${valuesForParams[3]}&sizeMult=${valuesForParams[4]}&circleFrames=${valuesForParams[5]}`;
-  }
-};
-
-//Colors
-const hslToHex = (h, s, l) => {
-  l /= 100;
-  const a = (s * Math.min(l, 1 - l)) / 100;
-  const f = (n) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color)
-      .toString(16)
-      .padStart(2, "0");
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
-};
-
-const downloadURI = (uri, name) => {
-  var link = document.createElement("a");
-  link.download = name;
-  link.href = uri;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-const exportToImage = () => {
-  const stage = document.getElementsByTagName("CANVAS")[0];
-  const dataURL = stage.toDataURL({ pixelRatio: 5 });
-  downloadURI(dataURL, "lissajous.png");
-};
-
-//A "Pointer" is one of the circles, including the line extending down or to the right.
-class Pointer extends React.Component {
-  constructor(x_, y_, size_, type_, angle_, rate_, color_) {
-    super();
-    this.x = x_;
-    this.y = y_;
-    this.size = size_;
-    this.type = type_; // 0 is a circleX; 1 is a circleY
-    this.angle = angle_;
-    this.rate = rate_;
-    this.color = color_;
-    this.tipX = this.size * Math.cos(this.angle);
-    this.tipY = -1 * this.size * Math.sin(this.angle);
-  }
-
-  update() {
-    //Updates the actual values; does not redraw
-    this.angle += (this.rate / 100) % (2 * Math.PI);
-    this.tipX = this.size * Math.cos(this.angle);
-    this.tipY = -1 * this.size * Math.sin(this.angle);
-  }
-
-  render(i) {
-    //Actually draws the shape
-    return (
-      <>
-        <Konva.Circle //Circle itself
-          x={this.x}
-          y={this.y}
-          radius={this.size}
-          stroke={hslToHex(360 * (this.color / numCircles), 100, 50)}
-          key={`Circle-${this.type}-${i}`}
-        />
-        <Konva.Text //Text in the center, displaying the speed
-          text={i + 1}
-          x={this.x}
-          y={this.y}
-          align={"center"}
-          verticalAlign={"middle"}
-          fontSize={this.size}
-          offsetX={this.size / 4}
-          offsetY={(this.size * 2) / 5}
-          fill={hslToHex(360 * (this.color / numCircles), 100, 50)}
-          key={`Label-${this.type}-${i}`}
-        />
-        {this.type === 0 ? (
-          <Konva.Line //Vertical line if it's a top circle
-            x={this.x + this.tipX}
-            y={this.y + this.tipY}
-            points={[0, 0, 0, stageSize - (this.tipY + this.y)]}
-            stroke={"white"}
-            opacity={0.5}
-            key={`VLine-${this.type}-${i}`}
-          />
-        ) : (
-          <Konva.Line //Horizontal line if it's a left circle
-            x={this.x + this.tipX}
-            y={this.y + this.tipY}
-            points={[0, 0, stageSize - (this.tipX + this.x), 0]}
-            stroke={"white"}
-            opacity={0.5}
-            key={`HLine-${this.type}-${i}`}
-          />
-        )}
-        <Konva.Circle //Point on the edge of the circle where the pointer is
-          x={this.x + this.tipX}
-          y={this.y + this.tipY}
-          radius={6}
-          fill={hslToHex(360 * (this.color / numCircles), 100, 50)}
-          key={`Tip-${this.type}-${i}`}
-        />
-      </>
-    );
-  }
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+  WIDTH = window.innerWidth / 2.5;
+  HEIGHT = WIDTH * 0.7;
 }
 
-export default () => {
-  let circleSpacing;
-  let circleRadius;
+const Index = () => {
+  const [velocity, setVelocity] = useState(0);
+  const [classical, setClassical] = useState(false);
 
-  //Arrays of Pointer objects in both direcitons
-  const [circlesX, setCirclesX] = useState([]);
-  const [circlesY, setCirclesY] = useState([]);
-
-  //2D Array of every intersection point
-  const [intersections, setIntersections] = useState([]);
-
-  //Frame counter and state variable for forced rerender
-  let renderCycle = 0;
-  const [rerender, setRerender] = useState(0);
+  const [worldlines, setWorldlines] = useState([]);
+  const [points, setPoints] = useState([]);
 
   useEffect(() => {
-    //This function is run once when the page loads
-    if (typeof window !== "undefined" && typeof document !== "undefined") {
-      if (window.innerWidth < 500) {
-        //Sets the size of the stage for mobile or desktop screens
-        stageSize = window.innerWidth * 0.9;
-      } else {
-        stageSize = window.innerHeight * 0.8;
-      }
-
-      //Extracting parameters from the URL, if applicable
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      const param0 = urlParams.get("circles");
-
-      if (param0) {
-        numCircles = urlParams.get("circles") - 0;
-        startingPositionX = urlParams.get("x") - 0;
-        startingPositionY = urlParams.get("y") - 0;
-        maxFramesBetweenCalculations = urlParams.get("maxFrames") - 0;
-        sizeMultiplier = urlParams.get("sizeMult") - 0;
-        framesBetweenCircleRenders = urlParams.get("circleFrames") - 0;
-      }
-    }
-
-    //Setting spacing variables with new values
-    circleSpacing = (stageSize - 12) / (numCircles + 1);
-    circleRadius = (0.4 * (stageSize - 12)) / (numCircles + 1);
-
-    //Initialize circle arrays
-    let currentCirclesX = [],
-      currentCirclesY = [];
-
-    for (let i = 0; i < numCircles; i++) {
-      const nextCircleX = new Pointer(
-        circleSpacing * (i + 1) + (circleSpacing - circleRadius) + 5, //X position
-        circleRadius + 7, //Y position
-        circleRadius, //Radius
-        0, //Type (0 means horizontal)
-        Math.PI * startingPositionX, //Starting angle
-        (i + 1) / 4, //Rate
-        i //Index (used for color)
-      );
-      const nextCircleY = new Pointer(
-        circleRadius + 7, //X position
-        circleSpacing * (i + 1) + (circleSpacing - circleRadius) + 5, //Y position
-        circleRadius, //Radius
-        1, //Type (1 means vertical)
-        Math.PI * startingPositionY, //Starting angle
-        (i + 1) / 4, //Rate
-        i //Index (used for color)
-      );
-
-      currentCirclesX.push(nextCircleX);
-      currentCirclesY.push(nextCircleY);
-    }
-
-    setCirclesX(currentCirclesX);
-    setCirclesY(currentCirclesY);
-
-    //Intersection 2D array initialization
-    let inter = [];
-
-    for (let x = 0; x < numCircles; x++) {
-      let inter2 = [];
-
-      for (let y = 0; y < numCircles; y++) {
-        inter2.push([]);
-      }
-
-      inter.push(inter2);
-    }
-
-    setIntersections(inter);
+    loadExample(DefaultExample);
   }, []);
 
-  useEffect(() => {
-    //This function runs every time the circlesX array changes (once, after it's initialized)
-    setInterval(() => {
-      //This function runs every millisecond (if it's running at maximum speed)
+  const getRelativeVelocity = v => {
+    if (classical) {
+      return v - velocity;
+    }
+    return - (-v + velocity) / (1 + -v * velocity);
+  };
 
-      //Update every circle's angle
-      for (const circle of circlesX) {
-        circle.update();
-      }
+  const updateWorldVelocity = v => {
+    setVelocity(v);
+    document.getElementById("velocity").value = v;
+  }
 
-      for (const circle of circlesY) {
-        circle.update();
-      }
-
-      //Calculating intersection points
-      let ints = intersections;
-
-      for (let i = 0; i < circlesX.length; i++) {
-        for (let j = 0; j < circlesY.length; j++) {
-          //This if statement is to skip most frames, determined by the sizeMultiplier and maxFramesBetweenCalculations parameters
-          if (
-            renderCycle %
-              Math.floor(
-                maxFramesBetweenCalculations /
-                  ((i + 1) * sizeMultiplier) /
-                  ((j + 1) * sizeMultiplier)
-              ) ===
-            0
-          ) {
-            const cX = circlesX[i];
-            const cY = circlesY[j];
-
-            ints[i][j].push(cX.x + cX.tipX);
-            ints[i][j].push(cY.y + cY.tipY);
-
-            setIntersections(ints);
-          }
-        }
-      }
-
-      setRerender(renderCycle++); //Forces a rerender
-    }, 1);
-  }, [circlesX]);
+  const loadExample = example => {
+    setWorldlines(example.worldlines);
+    setPoints(example.points)
+    updateWorldVelocity(0)
+  }
 
   return (
     <>
       <GlobalCSS />
       <div
         css={css`
-          display: grid;
-          width: 100vw;
-          height: 100vh;
-          overflow-x: hidden;
-          grid-template-areas:
-            "title stage"
-            "infoLeft stage";
-          grid-template-rows: 100px auto;
-          grid-template-columns: 30vw 70vw;
-
-          @media only screen and (max-width: 500px) {
-            grid-template-areas: "title" "stage" "infoLeft" "gap";
-            grid-template-rows: auto auto auto 50px;
-            grid-template-columns: 100vw;
-          }
+          display: flex;
+          flex-direction: column;
         `}
       >
-        <p
-          css={css`
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-top: 0;
-            grid-area: title;
-            padding: 50px 20px 0 20px;
-
-            @media only screen and (max-width: 500px) {
-              padding: 50px 20px;
-            }
-          `}
-        >
-          Lissajous Curves
-        </p>
         <div
           css={css`
-            grid-area: infoLeft;
-            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
           `}
         >
           <p
             css={css`
-              font-size: 1.1rem;
-              font-weight: 300;
-              margin-top: 0;
-            `}
-          >
-            Lissajous curves describe complex harmonic motion and are defined by
-            parametric equations of two sinusoidal functions (represetned by the
-            circles in the animation). The numbers inside the circles express
-            their relative speeds, which is also represented by their colors.
-          </p>
-          <Gap height="10px" />
-          <p
-            css={css`
-              font-size: 1.1rem;
-              font-weight: 300;
-              margin-top: 0;
-            `}
-          >
-            To improve efficiency in drawing, simpler curves are approximated by
-            fewer lines. Since the intersection points are only calculated
-            periodically, it makes some curves with small periods look jagged.
-            In reality, these curves would not have such rough corners. If you
-            have a more powerful computer, try changing the parameters below for
-            smoother shapes.
-          </p>
-          <Gap height="10px" />
-          <p
-            css={css`
-              font-size: 1.4rem;
-              font-weight: 600;
-              margin-bottom: 10px;
-            `}
-          >
-            Export Image
-          </p>
-          <p
-            css={css`
-              font-size: 1.1rem;
-              font-weight: 300;
-              margin-top: 0;
-            `}
-          >
-            You can export a high-quality version of the render using the button
-            below.
-          </p>
-          <p
-            css={css`
-              font-size: 1.2rem;
               font-weight: 700;
-              margin-bottom: 0;
-              padding: 5px;
-              background-color: rgb(60, 60, 60);
-              border-radius: 5px;
-              width: 50%;
-              text-align: center;
-              cursor: pointer;
-            `}
-            onClick={() => exportToImage()}
-          >
-            Download image
-          </p>
-          <Gap height="10px" />
-          <p
-            css={css`
-              font-size: 1.4rem;
-              font-weight: 600;
-              margin-bottom: 10px;
+              font-size: 2rem;
             `}
           >
-            Parameters
-          </p>
-          <p
-            css={css`
-              font-size: 1.1rem;
-              font-weight: 300;
-              margin-top: 0;
-            `}
-          >
-            Try changing the parameters below to see different curves. Note:
-            this depends on your computer's performance. The following changes
-            will require more computing power: more circles, fewer frames
-            between calculations, smaller size multipliers, fewer frames between
-            circle rerenders.
-          </p>
-          {paramNames.map((param, i) => (
-            <>
-              <p
-                css={css`
-                  font-size: 1.1rem;
-                  font-weight: 300;
-                  font-style: italic;
-                  margin-bottom: 0;
-                `}
-              >
-                {param}:
-              </p>
-              <input
-                type="number"
-                defaultValue={paramDefaults[i]}
-                id={paramIDs[i]}
-              />
-            </>
-          ))}
-          <p
-            css={css`
-              font-size: 1.2rem;
-              font-weight: 700;
-              margin-bottom: 0;
-              padding: 5px;
-              background-color: rgb(60, 60, 60);
-              border-radius: 5px;
-              width: 50%;
-              text-align: center;
-              cursor: pointer;
-            `}
-            onClick={() => setParameters()}
-          >
-            See the results!
-          </p>
-          
-          <Gap height="10px" />
-          <p
-            css={css`
-              font-size: 1.4rem;
-              font-weight: 600;
-              margin-bottom: 10px;
-            `}
-          >
-            Site information
-          </p>
-          <p
-            css={css`
-              font-size: 1.1rem;
-              font-weight: 300;
-              margin-top: 0;
-            `}
-          >
-            This site was made in February 2021 by Christian Bernier. Feel free
-            to check out the{" "}
-            <a href="https://github.com/christianbernier/lissajous">
-              source code
-            </a>
-            . If you have any questions or recommendations, free free to{" "}
-            <a href="https://cbernier.com">contact me</a>.
+            The Special Theory of Relativity
           </p>
         </div>
-        <Konva.Stage
-          width={stageSize}
-          height={stageSize}
-          css={css`
-            grid-area: stage;
-            display: flex;
-            justify-content: center;
-            margin-top: 50px;
-
-            @media only screen and (max-width: 500px) {
-              margin-top: 0;
-            }
-          `}
-        >
-          <Konva.FastLayer>
-            <Konva.Rect
-              x={0}
-              y={0}
-              width={stageSize}
-              height={stageSize}
-              fill={"rgba(43, 43, 43)"}
-            />
-            {renderCycle % framesBetweenCircleRenders === 0 ? (
-              circlesX.map((c, i) => c.render(i))
-            ) : (
-              <></>
-            )}
-            {renderCycle % framesBetweenCircleRenders === 0 ? (
-              circlesY.map((c, i) => c.render(i))
-            ) : (
-              <></>
-            )}
-            {intersections.map((x, i) =>
-              x.map((y, j) => (
-                <Konva.Line
-                  x={0}
-                  y={0}
-                  points={y}
-                  stroke={"#ccc"}
-                  key={`IntersectionLine-${i}-${j}`}
-                />
-              ))
-            )}
-          </Konva.FastLayer>
-        </Konva.Stage>
         <div
           css={css`
-            grid-area: gap;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+            `}
+        >
+          <div
+            css={css`
+                    max-width: 22vw;
+                `}
+          >
+            <InfoBox
+              header="What is special relativity?"
+              body={
+                <>
+                  <p>The special theory of relativity is a theory about how space and time relate to one another, based on the following two postulates:</p>
+                  <ol>
+                    <li>The laws of physics are identical in all inertial frames of reference.</li>
+                    <li>The speed of light in a vacuum is measured to be the same (c = 299,792,458 m/s) for all observers.</li>
+                  </ol>
+                </>
+              }
+            />
+            <InfoBox
+              header="What is the Lorentz transformation?"
+              body={
+                <p>The Lorentz transformation is a linear transformation that relates spacetime (x, y, z, t) for two observers moving relative to one another that is consistent with the special theory of relativity. This interactive site shows a version of the Lorentz transformation for a spacetime with one space dimension (x) and one time dimension (t).</p>
+              }
+            />
+            <InfoBox
+              header="What's wrong with classical relativity?"
+              body={
+                <>
+                  <p>In classical physics, relativity relates two observers moving relative to one another by simply adding their velocities. This approach, called classical relativity, works well enough for low velocities but encounters issues for velocities approaching the speed of light.</p>
+                  <p>For example, an observer moving at 80% the speed of light with respect to another observer could throw a ball at 70% the speed of light with respect to themself. The stationary observer, according to classical relativity, would see the ball move at 150% the speed of light, which is not possible. Special relativity accounts for this properly, predicting the observer would see the ball moving at 96% the speed of light (try the "Motorcycle" example to see the spacetime diagram).</p>
+                </>
+              }
+            />
+            <InfoBox
+              header="About this site"
+              body={
+                <>
+                  <p>This site was created for fun in January 2022 by Christian Bernier. Please feel free to <a href="https://cbernier.com">view the source code</a>, or <a href="https://cbernier.com">learn more about me</a>.</p>
+                </>
+              }
+            />
+          </div>
+          <div
+            css={css`
+            max-width: ${WIDTH + 40}px;
           `}
-        />
+          >
+            <div
+              css={css`
+                  width: ${WIDTH}px;
+                  padding: 20px;
+                  background-color: #eee;
+                  overflow-x: hidden;
+                  border-radius: 10px;
+                  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+                  margin-bottom: 20px;
+                `}
+            >
+              <p className="header">Spacetime Diagram</p>
+              <SpacetimeDiagram width={WIDTH} height={HEIGHT} velocity={-velocity} worldlines={worldlines} points={points} classical={classical} />
+              <p className="subheader">Key:</p>
+              <div
+                css={css`
+                  display: flex;
+                  flex-direction: row;
+
+                  p {
+                    margin-right: 40px;
+                  }
+                `}
+              >
+                <p>Horizonal axis: Displacement</p>
+                <p>Vertical axis: Time</p>
+              </div>
+              <div
+                css={css`
+                  display: flex;
+                  flex-direction: row;
+
+                  p {
+                    margin-right: 40px;
+                  }
+                `}
+              >
+                <p css={css`color: orange;`}>Speed of Light (c)</p>
+                <p>Δx = 299,792,458 m</p>
+                <p>Δt = 1 s</p>
+              </div>
+            </div>
+            <InfoBox
+              header="What is a spacetime diagram?"
+              body={
+                <>
+                  <p>A spacetime diagram relates a particle's position versus time. Time is typically represented on the vertical axis, and position is typically represented on the horizontal axis.</p>
+                  <p>By using segments of 1 second on the vertical axis and segments of exactly 299,792,458 meters on the horizontal axis, the speed of light will make a 45 degree angle with the axes.</p>
+                  <p>The different lines you see above are called worldlines, and they each represent a different particle's movement. Straight lines represent particles with constant velocity, with the velocity being proportional to the tangent of the angle the worldline makes with the vertical axis.</p>
+                  <p>Two worldlines on the spacetime diagram, the two orange ones above, never move under special relativity. They represent particles traveling at the speed of light (in accordance with the second postulate of special relativity).</p>
+                </>
+              }
+            />
+          </div>
+
+          <div
+            css={css`
+            width: 22vw;
+          `}
+          >
+            <InfoBox
+              header="Parameters"
+              body={
+                <>
+                  <p>Velocity relative to the Red Observer: {velocity.toFixed(3)} * c</p>
+                  <input 
+                    type="range" 
+                    id="velocity" 
+                    min={-0.999} 
+                    max={0.999} 
+                    step={0.00001} 
+                    defaultValue={0} 
+                    onChange={e => setVelocity(e.target.valueAsNumber)} 
+                    css={css`
+                      width: 80%;
+                    `}/>
+
+                  <p>Type of relativity:</p>
+                  <input type="radio" id="special" name="relativity" value="special" defaultChecked onClick={() => setClassical(false)} />
+                  <label htmlFor="special">Special Relativity</label>
+                  <br />
+                  <input type="radio" id="classical" name="relativity" value="classical" onClick={() => setClassical(true)} />
+                  <label htmlFor="classical">Classical Relativity</label>
+
+                  <p>Examples:</p>
+                  <button onClick={() => loadExample(DefaultExample)}>Default</button>
+                  <button onClick={() => loadExample(Motorcycle)}>Motorcycle</button>
+                  <button onClick={() => loadExample(Simultaneity)}>Simultaneity</button>
+                  <button onClick={() => loadExample(TwinParadox)}>Twin Paradox</button>
+
+                  <p>Your velocity: 0.0000 * c</p>
+                  {worldlines.map(wl => <span key={`wl-${wl.name}`}>
+                    <p>{wl.name}'s velocity: {getRelativeVelocity(wl.v).toFixed(4)} * c</p>
+                    <button onClick={() => updateWorldVelocity(wl.v)}>See perspective</button>
+                  </span>)}
+                </>
+              }
+            />
+          </div>
+        </div>
       </div>
     </>
-  );
-};
+  )
+}
+
+export default Index;
