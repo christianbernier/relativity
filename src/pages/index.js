@@ -127,7 +127,7 @@ const Index = () => {
           >
             <div
               css={css`
-                  width: ${WIDTH}px;
+                  width: 40vw;
                   padding: 20px;
                   background-color: #eee;
                   overflow-x: hidden;
