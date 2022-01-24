@@ -115,7 +115,7 @@ const Index = () => {
               header="About this site"
               body={
                 <>
-                  <p>This site was created for fun in January 2022 by Christian Bernier. Please feel free to <a href="https://cbernier.com">view the source code</a>, or <a href="https://cbernier.com">learn more about me</a>.</p>
+                  <p>This site was created for fun in January 2022 by Christian Bernier. Please feel free to <a href="https://github.com/christianbernier/relativity">view the source code</a>, or <a href="https://cbernier.com">learn more about me</a>.</p>
                 </>
               }
             />
