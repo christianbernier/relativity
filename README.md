@@ -1,3 +1,3 @@
-# lissajous
+# Special Relativity
 
-A visual representation of Lissajous curves.
+Interactive spacetime diagram tool to visualize special relativity
