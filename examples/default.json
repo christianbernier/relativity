@@ -1,0 +1,29 @@
+{
+    "worldlines": [
+        {
+            "v": 0,
+            "fromTime": 0,
+            "toTime": 99,
+            "displaceX": 0,
+            "color": "red",
+            "name": "Red Observer"
+        },
+        {
+            "v": 0.5,
+            "fromTime": 0,
+            "toTime": 99,
+            "displaceX": 0,
+            "color": "blue",
+            "name": "Blue Observer"
+        },
+        {
+            "v": -0.6,
+            "fromTime": 0,
+            "toTime": 99,
+            "displaceX": 0,
+            "color": "green",
+            "name": "Green Observer"
+        }
+    ],
+    "points": []
+}

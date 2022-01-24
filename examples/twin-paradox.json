@@ -1,0 +1,42 @@
+{
+    "worldlines": [
+        {
+            "v": 0,
+            "fromTime": 0,
+            "toTime": 6,
+            "displaceX": 0,
+            "color": "red",
+            "name": "Earth Observer"
+        },
+        {
+            "v": 0.5,
+            "fromTime": 0,
+            "toTime": 3,
+            "displaceX": 0,
+            "color": "blue",
+            "name": "Twin Departure"
+        },
+        {
+            "v": -0.5,
+            "fromTime": 3,
+            "toTime": 6,
+            "displaceX": 3,
+            "color": "blue",
+            "name": "Twin Return"
+        }
+    ],
+    "points": [
+        { "t": 0, "x": 0, "color": "red"},
+        { "t": 1, "x": 0, "color": "red"},
+        { "t": 2, "x": 0, "color": "red"},
+        { "t": 3, "x": 0, "color": "red"},
+        { "t": 4, "x": 0, "color": "red"},
+        { "t": 5, "x": 0, "color": "red"},
+        { "t": 6, "x": 0, "color": "red"},
+        { "t": 1.1547, "x": 0.57735, "color": "blue"},
+        { "t": 2.3094, "x": 1.1547, "color": "blue"},
+        { "t": 3.4641, "x": 1.26795, "color": "blue"},
+        { "t": 4.6188, "x": 0.6906, "color": "blue"},
+        { "t": 5.7735, "x": 0.11325, "color": "blue"}
+    ]
+}

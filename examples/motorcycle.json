@@ -1,0 +1,29 @@
+{
+    "worldlines": [
+        {
+            "v": 0,
+            "fromTime": 0,
+            "toTime": 99,
+            "displaceX": 0,
+            "color": "red",
+            "name": "Bystander Observer"
+        },
+        {
+            "v": 0.8,
+            "fromTime": 0,
+            "toTime": 99,
+            "displaceX": 0,
+            "color": "blue",
+            "name": "Motorcyclist Observer"
+        },
+        {
+            "v": 0.9615384615,
+            "fromTime": 0,
+            "toTime": 99,
+            "displaceX": 0,
+            "color": "purple",
+            "name": "Ball"
+        }
+    ],
+    "points": []
+}
