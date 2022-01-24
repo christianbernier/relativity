@@ -122,7 +122,7 @@ const Index = () => {
           </div>
           <div
             css={css`
-            max-width: ${WIDTH + 40}px;
+            width: 40vw;
           `}
           >
             <div
