@@ -145,7 +145,7 @@ const SpacetimeDiagram = ({ width, height, velocity, worldlines, points, classic
                     fill="#eee"
                 />
 
-                {[...Array(NUM_TIME_LINES).keys()].map(i => generateTimeLine(i, false))}
+                {/* {[...Array(NUM_TIME_LINES).keys()].map(i => generateTimeLine(i, false))} */}
                 {[...Array(NUM_TIME_LINES).keys()].map(i => generateTimeLine(i, true))}
                 {[...Array(NUM_TIME_LINES * 1.5).keys()].map(i => generateDisplacementLine(i - (NUM_TIME_LINES / 2).toFixed(0) - 1, true))}
                 {[...Array(NUM_TIME_LINES).keys()].map(i => generateTimeLabel(i))}
