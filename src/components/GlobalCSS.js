@@ -55,6 +55,18 @@ export default () => {
             font-size: 1.3rem;
           }
 
+          .bold {
+            font-weight: 700;
+          }
+
+          .spaceabove {
+            margin-top: 30px;
+          }
+
+          input[type=radio] {
+            margin-bottom: 10px;
+          }
+
           a {
             color: var(--font);
           }

@@ -19,32 +19,34 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
 }
 
 const Index = () => {
+  // State variables
   const [velocity, setVelocity] = useState(0);
   const [classical, setClassical] = useState(false);
-
   const [worldlines, setWorldlines] = useState([]);
   const [points, setPoints] = useState([]);
 
+  // When the page is loaded, set the spacetime diagram to the default example
   useEffect(() => {
     loadExample(DefaultExample);
   }, []);
 
-  const getRelativeVelocity = v => {
-    if (classical) {
-      return v - velocity;
-    }
-    return - (-v + velocity) / (1 + -v * velocity);
-  };
+  // Gets the relative velocity for an observer
+  // v    float   relative velocity of the observer
+  const getRelativeVelocity = v => (classical) ? (v - velocity) : (- (-v + velocity) / (1 + -v * velocity));
 
+  // Updates the velocity slider and velocity state variable
+  // v    float   velocity to update the slider and variable to
   const updateWorldVelocity = v => {
     setVelocity(v);
     document.getElementById("velocity").value = v;
   }
 
+  // Loads a set of worldlines and points from a JSON file
+  // example    JSON    data including the worldlines and points
   const loadExample = example => {
     setWorldlines(example.worldlines);
-    setPoints(example.points)
-    updateWorldVelocity(0)
+    setPoints(example.points);
+    updateWorldVelocity(0);
   }
 
   return (
@@ -162,7 +164,20 @@ const Index = () => {
                   }
                 `}
               >
-                <p css={css`color: orange;`}>Speed of Light (c)</p>
+                <p>Gray Grid: your spacetime</p>
+                <p css={css`color: #dd0000;`}>Red grid: Red Observer's spacetime</p>
+              </div>
+              <div
+                css={css`
+                  display: flex;
+                  flex-direction: row;
+
+                  p {
+                    margin-right: 40px;
+                  }
+                `}
+              >
+                <p css={css`color: orange;`}>Orange lines: Speed of Light (c)</p>
                 <p>Δx = 299,792,458 m</p>
                 <p>Δt = 1 s</p>
               </div>
@@ -189,36 +204,59 @@ const Index = () => {
               header="Parameters"
               body={
                 <>
-                  <p>Velocity relative to the Red Observer: {velocity.toFixed(3)} * c</p>
-                  <input 
-                    type="range" 
-                    id="velocity" 
-                    min={-0.999} 
-                    max={0.999} 
-                    step={0.00001} 
-                    defaultValue={0} 
-                    onChange={e => setVelocity(e.target.valueAsNumber)} 
+                  <p className="bold">Velocity relative to the Red Observer</p>
+                  <p>{velocity.toFixed(4)} c ≈ {(velocity * 299792.458).toFixed(0)} km/s</p>
+                  <input
+                    type="range"
+                    id="velocity"
+                    min={-1}
+                    max={1}
+                    step={0.00001}
+                    defaultValue={0}
+                    onChange={e => setVelocity(e.target.valueAsNumber)}
                     css={css`
                       width: 80%;
-                    `}/>
+                    `} />
 
-                  <p>Type of relativity:</p>
+                  <p className="bold spaceabove">Type of relativity</p>
                   <input type="radio" id="special" name="relativity" value="special" defaultChecked onClick={() => setClassical(false)} />
                   <label htmlFor="special">Special Relativity</label>
                   <br />
                   <input type="radio" id="classical" name="relativity" value="classical" onClick={() => setClassical(true)} />
                   <label htmlFor="classical">Classical Relativity</label>
 
-                  <p>Examples:</p>
+                  <p className="bold spaceabove">Examples</p>
                   <button onClick={() => loadExample(DefaultExample)}>Default</button>
                   <button onClick={() => loadExample(Motorcycle)}>Motorcycle</button>
                   <button onClick={() => loadExample(Simultaneity)}>Simultaneity</button>
                   <button onClick={() => loadExample(TwinParadox)}>Twin Paradox</button>
 
-                  <p>Your velocity: 0.0000 * c</p>
+                  <div
+                    css={css`
+                        p {
+                          margin: 0;
+                        }
+
+                        margin: 30px 0;
+                      `}
+                  >
+                    <p className="bold">You</p>
+                    <p>Apparent velocity: 0.0000 c</p>
+                  </div>
                   {worldlines.map(wl => <span key={`wl-${wl.name}`}>
-                    <p>{wl.name}'s velocity: {getRelativeVelocity(wl.v).toFixed(4)} * c</p>
-                    <button onClick={() => updateWorldVelocity(wl.v)}>See perspective</button>
+                    <div
+                      css={css`
+                        p {
+                          margin: 0;
+                        }
+
+                        margin-bottom: 30px;
+                      `}
+                    >
+                      <p className="bold">{wl.name}</p>
+                      <p>Apparent velocity: {getRelativeVelocity(wl.v).toFixed(4)} c</p>
+                      <button onClick={() => updateWorldVelocity(wl.v)}>See perspective</button>
+                    </div>
                   </span>)}
                 </>
               }
